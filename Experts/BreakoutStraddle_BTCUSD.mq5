@@ -56,6 +56,7 @@ int      g_digits;
 datetime g_lastClose = 0;
 double   g_dayStartBalance = 0;
 int      g_day = -1;
+string   g_status = "";
 
 //+------------------------------------------------------------------+
 int OnInit()
@@ -91,6 +92,24 @@ int OnInit()
   }
 
 //+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+  {
+   Comment("");
+  }
+
+//+------------------------------------------------------------------+
+void ShowStatus(string msg)
+  {
+   g_status = msg;
+   Comment(StringFormat("BreakoutStraddle BTCUSD\n"
+                        "Estado: %s\n"
+                        "Spread: %.2f $ (max %.2f $)\n"
+                        "Entrada: +/- %.2f $   SL: %.2f $   Lote: %.2f",
+                        msg, SpreadPoints() * g_point, InpMaxSpreadUsd,
+                        InpEntryUsd, InpStopLossUsd, CalcLots()));
+  }
+
+//+------------------------------------------------------------------+
 void OnTick()
   {
    UpdateDailyBalance();
@@ -106,6 +125,7 @@ void OnTick()
       if(buyStop  > 0) trade.OrderDelete(buyStop);
       if(sellStop > 0) trade.OrderDelete(sellStop);
       ManagePosition(posTicket);
+      ShowStatus("POSICAO ABERTA - a gerir SL/trailing");
       return;
      }
 
@@ -114,14 +134,27 @@ void OnTick()
      {
       if(buyStop  > 0) trade.OrderDelete(buyStop);
       if(sellStop > 0) trade.OrderDelete(sellStop);
+      ShowStatus("PARADO - fora do horario ou limite de perda diaria");
+      return;
+     }
+
+   if(!TerminalInfoInteger(TERMINAL_TRADE_ALLOWED) || !MQLInfoInteger(MQL_TRADE_ALLOWED))
+     {
+      ShowStatus("SEM PERMISSAO - liga o botao Algo Trading");
       return;
      }
 
    if(SpreadPoints() > P_MaxSpread)
+     {
+      ShowStatus("A ESPERA - spread demasiado alto");
       return;
+     }
 
    if(InpCooldownSeconds > 0 && TimeCurrent() - g_lastClose < InpCooldownSeconds)
+     {
+      ShowStatus("A ESPERA - pausa apos fecho");
       return;
+     }
 
    double ask  = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    double bid  = SymbolInfoDouble(_Symbol, SYMBOL_BID);
@@ -140,6 +173,8 @@ void OnTick()
       PlaceStop(ORDER_TYPE_SELL_STOP, sellPrice);
    else
       TrailPending(sellStop, sellPrice, false);
+
+   ShowStatus("ATIVO - ordens BUY STOP / SELL STOP colocadas");
   }
 
 //+------------------------------------------------------------------+
