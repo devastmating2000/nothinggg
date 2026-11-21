@@ -30,3 +30,27 @@ Um robô de scalping por breakout. Foi pensado para o **XAUUSD em M1**, a mesma 
 
 ## ⚠️ Aviso
 Esta estratégia depende muito do **spread, do slippage e da execução da corretora**. Testa sempre primeiro no **Strategy Tester** (modo "Every tick based on real ticks") e depois numa **conta demo**. Os resultados de vídeos de redes sociais não garantem lucro.
+
+---
+
+# Versão BTCUSD – `Experts/BreakoutStraddle_BTCUSD.mq5`
+
+A lógica é a mesma, mas afinada para Bitcoin (gráfico M1, mercado aberto 24/7):
+
+- As distâncias estão em **dólares de preço do BTC** e não em pontos. Assim funciona da mesma forma em qualquer corretora, tenha o BTCUSD 1 ou 2 casas decimais. O EA converte-as sozinho para pontos.
+- Usa um magic number diferente (`20261122`), por isso pode correr ao mesmo tempo que a versão do ouro.
+
+| Parâmetro | Predefinição | Descrição |
+|---|---|---|
+| InpLots / InpRiskPercent | 0.01 / 0 | Lote fixo, ou % de risco por trade |
+| InpEntryUsd | 40 $ | Distância das ordens STOP ao preço |
+| InpPendingTrailUsd | 10 $ | Reajusta as pendentes quando o preço se afasta |
+| InpStopLossUsd / InpTakeProfitUsd | 60 $ / 0 | SL e TP (TP 0 = sai por trailing) |
+| InpBreakEvenUsd / LockUsd | 40 $ / 5 $ | Break-even |
+| InpTrailStartUsd / DistUsd / StepUsd | 60 $ / 40 $ / 5 $ | Trailing stop |
+| InpMaxSpreadUsd | 25 $ | Não abre ordens se o spread for maior |
+
+Com 1 lote = 1 BTC (o mais comum), 0.01 lote perde cerca de **0,60 $** se bater no SL de 60 $.
+Confirma o tamanho do contrato na tua corretora, em *Especificação do símbolo*.
+
+**Dica:** o spread do BTC varia muito de corretora para corretora (5 a 50 $). A distância de entrada e o SL devem ficar pelo menos 2 a 3 vezes acima do spread típico. Caso contrário, o spread come o lucro.
